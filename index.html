@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwolePlate</title>
+    <style>
+        :root {
+            --primary: #00e05a;
+            --secondary: #3d3d3d;
+            --bg: #121212;
+            --card: #1e1e1e;
+            --text: #ffffff;
+            /* Plate Colors */
+            --p45: #3333ff; --p35: #eeee00; --p25: #0c9f42;
+            --p15: #6d6d6d; --p10: #ffffff; --p5: #ff2c2c; --p2_5: #675cff;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg); color: var(--text);
+            display: flex; justify-content: center; padding: 10px; margin: 0;
+        }
+        .container { width: 100%; max-width: 480px; background: var(--card); padding: 1.5rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        /* Navigation */
+        .nav-bar {
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 98%; background: #1a1a1a; border-radius: 10px 10px 0 0;
+            display: flex; justify-content: space-around; margin: 5px auto 0 auto; 
+            border-top: 1px solid #333; z-index: 100;
+        }
+        .nav-item { color: #888; text-decoration: none; font-size: 0.8rem; cursor: pointer; text-align: center; flex: 1; padding: 8px 0 10px 0;}
+        .nav-item.active { color: var(--primary); font-weight: bold; background-color: var(--secondary); border-radius: 10px 10px 0 0;}
+        .nav-item span { display: block; font-size: 1.5rem; }
+
+        .tab-content { display: none; animation: fadeIn 0.5s; }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        /* Shared Components */
+        h1 { color: var(--primary); text-align: center; margin: 0; }
+        .controls { display: flex; flex-direction: column; align-items: center; gap: 15px; margin: 20px 0; }
+        
+        /* Calculator Specifics */
+        .bar-input-card { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .bar-toggle { display: flex; width: 50%; background: #000; border-radius: 10px; padding: 5px; margin: 15px auto 15px auto; }
+        .bar-opt { flex: 1; text-align: center; padding: 8px; cursor: pointer; border-radius: 8px; font-weight: bold; }
+        .bar-opt.active { background: var(--primary); color: #000; }
+
+        input {
+            width: 80%; padding: 12px; font-size: 1.8rem; border-radius: 12px;
+            border: 2px solid #444; background: #000; color: var(--primary); text-align: center; display: block; margin: 0 auto 15px auto;
+        }
+
+        /* Plate Visualizer */
+        .visualizer {
+            height: 120px; display: flex; align-items: center; justify-content: center;
+            background: #080808; border-radius: 15px; margin-bottom: 20px; overflow: hidden;
+            position: relative; border: 1px solid #333;
+        }
+        .bar-shaft { height: 10px; width: 60%; background: #555; position: absolute; z-index: 1; left: 0; }
+        .sleeve { height: 20px; width: 135px; background: #888; position: absolute; right: 2; z-index: 2; border-left: 4px solid #444; }
+        .sleeve_stop { height: 30px; width: 15px; background: #888; position: absolute; left: 35%; z-index: 2; }
+        .plates-container { display: flex; flex-direction: row; align-items: center; position: absolute; right: auto; z-index: 3; gap: 2px; }
+        
+        .plate-v { border-radius: 4px; border: 1px solid rgba(0,0,0,0.3); box-shadow: 2px 0 5px rgba(0,0,0,0.5); }
+        
+        /* Percentage Table */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
+        th { text-align: left; color: #888; padding: 8px; border-bottom: 1px solid #333; }
+        td { padding: 10px 8px; border-bottom: 1px solid #2a2a2a; }
+        tr.active-row { background: var(--secondary); font-weight: bold; cursor: pointer; font-size: 1rem;}
+        tbody tr:hover {cursor: pointer; background: #606060; }
+        .weight-val { color: var(--primary); font-weight: bold; }
+        .weight-val-secondary { color: #ff4444; font-weight: bold; }
+        .warning { color: #ff4444; font-size: 1.0rem; font-weight: bold; margin-top: 5px; display: none; animation: blinker 1.5s linear infinite;}
+        @keyframes blinker { 80% { opacity: 0; } }
+
+        /* Lifting Records Specifics */
+        .record-input-card { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .liftType { width: 80%; padding: 10px; margin: 15px auto 15px auto; border-radius: 8px; background: #000; color: white; border: 2px solid #444; font-size: 1.0rem;}
+        .record-entry { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .record-info { flex-basis: 45%;}
+        .record-lift { font-weight: bold; color: var(--primary); font-size: 1.1rem; flex-wrap: wrap; }
+        .record-date { font-size: 0.7rem; color: #888; }
+        .record-weight { font-size: 1.2rem; font-weight: bold; }
+        .add-btn { background: var(--primary); color: #000; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; width: 100%; margin: 10px auto 10px auto; font-size: 1.0rem; cursor: pointer;}
+        .recordList {max-height: 40vh ; overflow: scroll; scrollbar-width: none }
+
+        /* Data Management Section */
+        .data-actions { display: flex; justify-content: space-between; gap: 10px; margin-top: 20px; border-top: 1px solid #333; padding-top: 20px; }
+        .data-btn { flex: 1; padding: 8px; font-size: 0.8rem; border-radius: 8px; border: 1px solid var(--secondary); background: transparent; color: #888; cursor: pointer; }
+        .data-btn:hover { background: var(--secondary); color: white; }
+    </style>
+</head>
+<body>
+
+
+<div class="container">
+    <div id="calcTab" class="tab-content active">
+        <h1>SwolePlate Calculator</h1>
+        
+        <div class="bar-input-card">
+            <div class="bar-toggle">
+                <div id="bar35" class="bar-opt" onclick="setBar(35)">35lb Bar</div>
+                <div id="bar45" class="bar-opt active" onclick="setBar(45)">45lb Bar</div>
+            </div>
+            <input type="number" id="weightInput" placeholder="Target Weight" min="35" max="1000" oninput="update()">
+            <div id="maxWarning" class="warning">Maximum weight 1000 lbs reached!</div>
+        </div>
+
+        <div class="visualizer">
+            <div class="bar-shaft"></div>
+            <div class="sleeve"></div>
+            <div class="sleeve_stop"></div>
+            <div id="platesContainer" class="plates-container"></div>
+        </div>
+
+        <table>
+            <thead><tr><th>%</th><th>Actual</th><th>Load</th><th>Plates (Per Side)</th></tr></thead>
+            <tbody id="percBody"></tbody>
+        </table>
+    </div>
+
+    <div id="recordsTab" class="tab-content">
+        <h1>SwolePlate Records</h1>
+
+        <form id="recordForm" class="record-input-card">
+            <select id="liftType" class="liftType">
+                <option>Back Squat</option>
+                <option>Bench Press</option>
+                <option>Deadlift</option>
+                <option>Strict Press</option>
+                <option>Push Press</option>
+                <option>Push Jerk</option>
+                <option>Power Clean</option>
+                <option>Squat Clean</option>
+                <option>Clean & Jerk</option>
+                <option>Power Snatch</option>
+                <option>Squat Snatch</option>
+                <option>Front Squat</option>
+                <option>Overhead Squat</option>
+            </select>
+            <input type="number" id="recordWeight" placeholder="Max Weight (lbs)">
+            <button type="submit" class="add-btn">Save New Record</button>
+        </form>
+
+        <input type="text" id="recordSearch" placeholder="Search Records..." oninput="searchRecords(this.value)" style="width: 90%; padding: 8px; border-radius: 8px; background: #000; border: 2px solid #444; font-size: 0.9rem; margin-bottom: 15px;">
+        
+        <div id="recordList" class="recordList"></div>
+
+        <div class="data-actions">
+            <button class="data-btn" onclick="exportRecords()">📤 Export JSON</button>
+            <button class="data-btn" onclick="document.getElementById('importFile').click()">📥 Import JSON</button>
+            <input type="file" id="importFile" style="display:none" accept=".json" onchange="importRecords(event)">
+        </div>
+    </div>
+</div>
+
+<nav class="nav-bar">
+    <div class="nav-item active" id="navCalc" onclick="showTab('calcTab')"><span>⚖️</span>Calc</div>
+    <div class="nav-item" id="navRecords" onclick="showTab('recordsTab')"><span>🏆</span>Records</div>
+</nav>
+
+
+<script>
+    let currentBar = 45;
+    const plateData = {
+        45: {color: 'var(--p45)', h: 100, w: 18},
+        35: {color: 'var(--p35)', h: 90, w: 16},
+        25: {color: 'var(--p25)', h: 80, w: 14},
+        15: {color: 'var(--p15)', h: 70, w: 12},
+        10: {color: 'var(--p10)', h: 60, w: 10},
+        5:  {color: 'var(--p5)',  h: 45, w: 8},
+        2.5: {color: 'var(--p2_5)',  h: 38, w: 6}
+    };
+
+    window.onload = function() {
+        renderRecords();
+    };
+
+    function showTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        if(tabId === 'calcTab') {
+            document.getElementById('navCalc').classList.add('active');
+        } else {
+            document.getElementById('navRecords').classList.add('active');
+            renderRecords();
+        }
+    }
+
+    function setBar(weight) {
+        currentBar = weight;
+        document.getElementById('bar35').classList.toggle('active', weight === 35);
+        document.getElementById('bar45').classList.toggle('active', weight === 45);
+        update();
+    }
+
+    function getPlates(total) {
+        let remainder = (total - currentBar) / 2;
+        let result = [];
+        [45, 35, 25, 15, 10, 5, 2.5].forEach(p => {
+            const count = Math.floor(remainder / p);
+            for(let i=0; i<count; i++) result.push(p);
+            remainder %= p;
+        });
+        return result;
+    }
+
+    function update() {
+        let target = parseFloat(document.getElementById('weightInput').value);
+        const warning = document.getElementById('maxWarning');
+        const container = document.getElementById('platesContainer');
+        const tableBody = document.getElementById('percBody');
+        
+        if (target > 1000) {
+            target = 1000;
+            document.getElementById('weightInput').value = 1000;
+            warning.style.display = 'block';
+        } else {
+            warning.style.display = 'none';
+        }
+
+        container.innerHTML = '';
+        if (target >= currentBar) {
+            getPlates(target).forEach(p => {
+                const pDiv = document.createElement('div');
+                pDiv.className = 'plate-v';
+                pDiv.style.backgroundColor = plateData[p].color;
+                pDiv.style.height = plateData[p].h + 'px';
+                pDiv.style.width = plateData[p].w + 'px';
+                container.appendChild(pDiv);
+            });
+        }
+
+        tableBody.innerHTML = '';
+        if (target > 0) {
+            for (let p = 50; p <= 80; p += 10) addRow(p);
+            for (let p = 85; p <= 110; p += 5) addRow(p);
+        }
+
+        function addRow(p) {
+            let actualweight = Math.round((target * (p/100)));
+            let loadingweight = Math.round((target * (p/100)) / 5) * 5;
+            if (loadingweight < currentBar) loadingweight = currentBar;
+            
+            const plateList = getPlates(loadingweight);
+            const plateStr = plateList.length > 0 ? [...new Set(plateList)].map(val => 
+                `${plateList.filter(x => x === val).length}x${val}`).join(", ") : "Empty Bar";
+
+            tableBody.innerHTML += `
+                <tr data-loading="${loadingweight}" onclick="activateRow(this)" ondblclick="quickSet(${loadingweight})">
+                    <td>${p}%</td>
+                    <td class="weight-val-secondary">${actualweight}</td>
+                    <td class="weight-val">${loadingweight}</td>
+                    <td style="font-size: 0.75rem; color: #ccc;">${plateStr}</td>
+                </tr>`;
+        }
+    }
+
+    function activateRow(row) {
+        document.querySelectorAll("#percBody tr").forEach(r => r.classList.remove("active-row"));
+        row.classList.add("active-row");
+    }
+
+    function quickSet(val) {
+        document.getElementById("weightInput").value = val;
+        update();
+    }
+    
+    // Records Logic
+    function saveRecord() {
+        const lift = document.getElementById('liftType').value;
+        const weight = document.getElementById('recordWeight').value;
+        if(!weight || weight <= 0) return;
+
+        const records = JSON.parse(localStorage.getItem('gymRecords') || '[]');
+        records.unshift({ lift, weight: parseFloat(weight), date: new Date().toLocaleDateString() });
+        localStorage.setItem('gymRecords', JSON.stringify(records));
+        document.getElementById('recordWeight').value = '';
+        renderRecords();
+    }
+
+    function renderRecords(recordsToRender = null) {
+        const list = document.getElementById('recordList');
+        const records = recordsToRender || JSON.parse(localStorage.getItem('gymRecords') || '[]');
+        
+        if (records.length === 0) {
+            list.innerHTML = `<p style="text-align:center; color:#666; margin-top:20px;">No records found.</p>`;
+            return;
+        }
+        
+        list.innerHTML = records.map((r, index) => `
+            <div class="record-entry">
+                <div class="record-info">
+                    <span class="record-lift">${r.lift}</span><br>
+                    <span class="record-date">${r.date}</span>
+                </div>
+                <div class="record-weight">${r.weight} lbs</div>
+                <button onclick="deleteRecord(${index})" style="background:none; border:none; color:#ff4444; cursor:pointer; font-weight: bold;">✕</button>
+            </div>
+        `).join('');
+    }
+
+    function deleteRecord(index) {
+        if(confirm("Delete this record?")) {
+            const records = JSON.parse(localStorage.getItem('gymRecords') || '[]');
+            records.splice(index, 1);
+            localStorage.setItem('gymRecords', JSON.stringify(records));
+            renderRecords();
+        }
+    }
+
+    document.getElementById("recordForm").addEventListener("submit", (e) => { e.preventDefault(); saveRecord(); });
+
+    function searchRecords(query) {
+        const records = JSON.parse(localStorage.getItem('gymRecords') || '[]');
+        const filtered = records.filter(r => r.lift.toLowerCase().includes(query.toLowerCase()));
+        renderRecords(filtered);
+    }
+
+    // EXPORT & IMPORT LOGIC
+    function exportRecords() {
+        const records = localStorage.getItem('gymRecords') || '[]';
+        const blob = new Blob([records], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `swoleplate_records_${new Date().toISOString().slice(0,10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function importRecords(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const imported = JSON.parse(e.target.result);
+                if (!Array.isArray(imported)) throw new Error("Invalid format");
+                
+                if(confirm("Do you want to MERGE these records with your existing ones? (Cancel will REPLACE them all)")) {
+                    const existing = JSON.parse(localStorage.getItem('gymRecords') || '[]');
+                    const merged = [...imported, ...existing];
+                    localStorage.setItem('gymRecords', JSON.stringify(merged));
+                } else {
+                    localStorage.setItem('gymRecords', JSON.stringify(imported));
+                }
+                
+                renderRecords();
+                alert("Import successful!");
+            } catch (err) {
+                alert("Error importing file. Please ensure it's a valid SwolePlate JSON file.");
+            }
+        };
+        reader.readAsText(file);
+    }
+</script>
+</body>
+</html>
