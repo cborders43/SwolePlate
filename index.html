@@ -18,16 +18,16 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg); color: var(--text);
-            display: flex; justify-content: center; padding: 10px; margin: 0;
+            display: flex; justify-content: center; padding: 10px; padding-bottom: 90px; margin: 0;
         }
-        .container { width: 100%; max-width: 480px; background: var(--card); padding: 1.5rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        
+        .container { width: 100%; background: var(--card); padding: 1.5rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-height: fit-content;}
+
         /* Navigation */
         .nav-bar {
             position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
             width: 98%; background: #1a1a1a; border-radius: 10px 10px 0 0;
-            display: flex; justify-content: space-around; margin: 5px auto 0 auto; 
-            border-top: 1px solid #333; z-index: 100;
+            display: flex; justify-content: space-around; margin: 15px auto 0 auto; 
+            border-top: 1px solid #333; z-index: 100; padding-bottom: env(safe-area-inset-bottom);
         }
         .nav-item { color: #888; text-decoration: none; font-size: 0.8rem; cursor: pointer; text-align: center; flex: 1; padding: 8px 0 10px 0;}
         .nav-item.active { color: var(--primary); font-weight: bold; background-color: var(--secondary); border-radius: 10px 10px 0 0;}
@@ -39,35 +39,36 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
         /* Shared Components */
-        h1 { color: var(--primary); text-align: center; margin: 0; }
+        h1 { color: var(--primary); text-align: center; margin: 0; font-size: 1.6rem; letter-spacing: -0.5px;}
         .controls { display: flex; flex-direction: column; align-items: center; gap: 15px; margin: 20px 0; }
         
         /* Calculator Specifics */
         .bar-input-card { display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .bar-toggle { display: flex; width: 50%; background: #000; border-radius: 10px; padding: 5px; margin: 15px auto 15px auto; }
+        .bar-toggle { display: flex; width: 50%; background: #000; border-radius: 10px; padding: 5px; margin: 5px; }
         .bar-opt { flex: 1; text-align: center; padding: 8px; cursor: pointer; border-radius: 8px; font-weight: bold; }
         .bar-opt.active { background: var(--primary); color: #000; }
 
         input {
             width: 80%; padding: 12px; font-size: 1.8rem; border-radius: 12px;
-            border: 2px solid #444; background: #000; color: var(--primary); text-align: center; display: block; margin: 0 auto 15px auto;
+            border: 2px solid #444; background: #000; color: var(--primary); text-align: center; display: block; margin: 10px;
         }
 
         /* Plate Visualizer */
         .visualizer {
             height: 120px; display: flex; align-items: center; justify-content: center;
-            background: #080808; border-radius: 15px; margin-bottom: 20px; overflow: hidden;
+            background: #080808; border-radius: 15px; margin-bottom: 10px; overflow: hidden;
             position: relative; border: 1px solid #333;
         }
-        .bar-shaft { height: 10px; width: 60%; background: #555; position: absolute; z-index: 1; left: 0; }
-        .sleeve { height: 20px; width: 135px; background: #888; position: absolute; right: 2; z-index: 2; border-left: 4px solid #444; }
-        .sleeve_stop { height: 30px; width: 15px; background: #888; position: absolute; left: 35%; z-index: 2; }
-        .plates-container { display: flex; flex-direction: row; align-items: center; position: absolute; right: auto; z-index: 3; gap: 2px; }
+        .bar-shaft { height: 10px; width: 30%; background: #555; position: absolute; z-index: 1; left: 0; }
+        .sleeve_stop { height: 30px; width: 15px; background: #888; position: absolute; left: 30%; z-index: 2; }
+        .sleeve { height: 20px; width: 135px; background: #888; position: absolute; left: 32%; z-index: 2; border-left: 4px solid #444; }
+        .plates-container { display: flex; flex-direction: row; align-items: center; position: absolute; left: 37%; z-index: 3; gap: 3px;}
         
         .plate-v { border-radius: 4px; border: 1px solid rgba(0,0,0,0.3); box-shadow: 2px 0 5px rgba(0,0,0,0.5); }
         
         /* Percentage Table */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
+        .perc-table-container {overflow: scroll; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 0.9rem;}
         th { text-align: left; color: #888; padding: 8px; border-bottom: 1px solid #333; }
         td { padding: 10px 8px; border-bottom: 1px solid #2a2a2a; }
         tr.active-row { background: var(--secondary); font-weight: bold; cursor: pointer; font-size: 1rem;}
@@ -80,18 +81,43 @@
         /* Lifting Records Specifics */
         .record-input-card { display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .liftType { width: 80%; padding: 10px; margin: 15px auto 15px auto; border-radius: 8px; background: #000; color: white; border: 2px solid #444; font-size: 1.0rem;}
+        .add-btn { background: var(--primary); color: #000; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; width: 100%; margin: 10px auto 10px auto; font-size: 1.0rem; cursor: pointer;}
         .record-entry { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         .record-info { flex-basis: 45%;}
         .record-lift { font-weight: bold; color: var(--primary); font-size: 1.1rem; flex-wrap: wrap; }
         .record-date { font-size: 0.7rem; color: #888; }
         .record-weight { font-size: 1.2rem; font-weight: bold; }
-        .add-btn { background: var(--primary); color: #000; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; width: 100%; margin: 10px auto 10px auto; font-size: 1.0rem; cursor: pointer;}
-        .recordList {max-height: 40vh ; overflow: scroll; scrollbar-width: none }
+        .recordList {max-height: 40vh ; overflow: scroll; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
 
-        /* Data Management Section */
+        /* Data Management Section - Export & Import JSON file records */
         .data-actions { display: flex; justify-content: space-between; gap: 10px; margin-top: 20px; border-top: 1px solid #333; padding-top: 20px; }
         .data-btn { flex: 1; padding: 8px; font-size: 0.8rem; border-radius: 8px; border: 1px solid var(--secondary); background: transparent; color: #888; cursor: pointer; }
         .data-btn:hover { background: var(--secondary); color: white; }
+    
+        
+
+        /* Responsive adjustments for small screens */
+        @media (max-width: 480px) {
+            h1 { font-size: 1.3rem; }
+            .nav-item { font-size: 0.7rem; }
+            .nav-item span { font-size: 1.2rem; }
+
+            .bar-toggle { font-size: small; width: 90%;}
+            input { width: 90%; margin:5px; font-size: 1.1rem;}
+            .visualizer { height: 110px; }
+            .weight-perc {font-size: 0.85rem}
+            .weight-val { font-size: 0.85rem; }
+            .weight-val-secondary { font-size: 0.85rem; }
+
+            .liftType { width: 90%; margin:5px; font-size: 0.9rem;}
+            .add-btn {font-size: 0.9rem; margin:5px auto;}
+            
+            .record-entry { background: var(--card); padding: 2px 5px 0 5px; margin-bottom: 5px; border-bottom: 1px solid #333; border-radius: 6px;}
+            .record-lift { font-weight: bold; color: var(--primary); font-size: 1rem; flex-wrap: wrap; }
+            .record-date { font-size: 0.7rem; color: #888; }
+            .record-weight { font-size: 1rem; font-weight: bold; }
+        }
+    
     </style>
 </head>
 <body>
@@ -117,10 +143,14 @@
             <div id="platesContainer" class="plates-container"></div>
         </div>
 
-        <table>
-            <thead><tr><th>%</th><th>Actual</th><th>Load</th><th>Plates (Per Side)</th></tr></thead>
-            <tbody id="percBody"></tbody>
-        </table>
+        <div class="perc-table-container">
+            <table>
+                <thead><tr><th>%</th><th>Actual</th><th>Load</th><th>Plates (Per Side)</th></tr></thead>
+                <tbody id="percBody"></tbody>
+            </table>
+        </div>
+
+        
     </div>
 
     <div id="recordsTab" class="tab-content">
@@ -144,10 +174,9 @@
             </select>
             <input type="number" id="recordWeight" placeholder="Max Weight (lbs)">
             <button type="submit" class="add-btn">Save New Record</button>
+            <input type="text" class="recordSearch" id="recordSearch"  placeholder="Search Records..." oninput="searchRecords(this.value)" style="padding: 8px; border-radius: 8px; background: #000; border: 2px solid #444; font-size: 0.8rem; margin-bottom: 15px;">
         </form>
 
-        <input type="text" id="recordSearch" placeholder="Search Records..." oninput="searchRecords(this.value)" style="width: 90%; padding: 8px; border-radius: 8px; background: #000; border: 2px solid #444; font-size: 0.9rem; margin-bottom: 15px;">
-        
         <div id="recordList" class="recordList"></div>
 
         <div class="data-actions">
@@ -156,6 +185,7 @@
             <input type="file" id="importFile" style="display:none" accept=".json" onchange="importRecords(event)">
         </div>
     </div>
+
 </div>
 
 <nav class="nav-bar">
@@ -253,7 +283,7 @@
 
             tableBody.innerHTML += `
                 <tr data-loading="${loadingweight}" onclick="activateRow(this)" ondblclick="quickSet(${loadingweight})">
-                    <td>${p}%</td>
+                    <td class="weight-perc">${p}%</td>
                     <td class="weight-val-secondary">${actualweight}</td>
                     <td class="weight-val">${loadingweight}</td>
                     <td style="font-size: 0.75rem; color: #ccc;">${plateStr}</td>
